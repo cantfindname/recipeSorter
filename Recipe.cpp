@@ -76,3 +76,18 @@ void Recipe::swapRecipe(Recipe& other) {
 
 
 }
+
+int Recipe::valueGetter(string var) {
+	if (var == "mins") {
+		return this->mins; 
+	 }
+	else if (var == "numSteps") {
+		return this->numSteps;
+	}
+	else if (var == "numIngred") {
+		return this->numIngred;
+	}
+	else {
+		return -1; 
+	}
+}
