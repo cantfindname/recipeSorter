@@ -29,4 +29,7 @@ public:
 	int getNumIngred();
 	string getIngredients();
 	string getNutrition();
+
+
+	void swapRecipe(Recipe& other);
 };
