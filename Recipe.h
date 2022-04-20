@@ -32,4 +32,5 @@ public:
 
 
 	void swapRecipe(Recipe& other);
+	int valueGetter( string var);
 };
