@@ -56,3 +56,23 @@ string Recipe::getIngredients() {
 string Recipe::getNutrition() {
 	return nutrition;
 }
+
+void Recipe::swapRecipe(Recipe& other) {
+
+	cout << "before swaping: " << this->name << endl; 
+	cout << "other: " << other.getName() << endl;
+
+	std::swap(name, other.name);
+	std::swap(uniqueID, other.uniqueID);
+	std::swap(mins, other.mins);
+	std::swap(nutrition, other.nutrition);
+	std::swap(numSteps, other.numSteps);
+	std::swap(numIngred, other.numIngred);
+	std::swap(ingredients, other.ingredients);
+	std::swap(steps, other.steps);
+
+	cout << "after swaping: " << this->name << endl;
+	cout << "other: " << other.getName() << endl;
+
+
+}
