@@ -1,6 +1,7 @@
-#include <fstream>
 
+#include <fstream>
 #include "Recipe.h"
+
 using namespace std;
 
 Recipe::Recipe() {
@@ -58,10 +59,7 @@ string Recipe::getNutrition() {
 }
 
 void Recipe::swapRecipe(Recipe& other) {
-
-	cout << "before swaping: " << this->name << endl; 
-	cout << "other: " << other.getName() << endl;
-
+	
 	std::swap(name, other.name);
 	std::swap(uniqueID, other.uniqueID);
 	std::swap(mins, other.mins);
@@ -71,16 +69,17 @@ void Recipe::swapRecipe(Recipe& other) {
 	std::swap(ingredients, other.ingredients);
 	std::swap(steps, other.steps);
 
-	cout << "after swaping: " << this->name << endl;
-	cout << "other: " << other.getName() << endl;
-
-
 }
 
 int Recipe::valueGetter(string var) {
+	
+	if (this == nullptr) { // check for potential error
+		cout << "not supposed to happen" << endl; 
+		return -1; 
+	}
 	if (var == "mins") {
 		return this->mins; 
-	 }
+	}
 	else if (var == "numSteps") {
 		return this->numSteps;
 	}
@@ -90,4 +89,9 @@ int Recipe::valueGetter(string var) {
 	else {
 		return -1; 
 	}
+}
+
+//destructor
+Recipe::~Recipe() {
+	delete this;
 }
