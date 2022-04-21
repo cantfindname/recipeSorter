@@ -24,15 +24,15 @@ void heapify(vector<Recipe*> recipes, int size, int index, string type);
 void printSelected(vector<Recipe*> recipes, string type, int size);
     
     // search for recipe according to user input
-void searchData(vector<Recipe*> recipes, string keyword, string sortBy);
+void searchData(vector<Recipe*> recipes, string keyword, string sortBy, string sort);
 
 
 // ----------- getting user input and calling functions -----------
 int main() {
-    auto start = high_resolution_clock::now(); 
 
     string keyword;
     string sortItBy;
+    string typeSort; 
     bool validCin = false; 
 
     // user interface and input
@@ -42,37 +42,40 @@ int main() {
     cin >> keyword; 
     cout << "how would you like to sort it by? Enter either numberOfIngredients, numberOfSteps, or timeItTakes" << endl;
     cin >> sortItBy; 
+    cout << "which sort would you like to use? Enter either \"quick\" for quick sort or \"heap\" for heap sort" << endl; 
+    cin >> typeSort; 
 
     // initialize the recipes vector and add Recipe object into the vector 
     vector<Recipe*> recipes; 
     recipes = dataParsing(recipes);
 
     // check for valid user input
-    if (sortItBy == "numberOfIngredients") {
-        sortItBy = "numIngred";
-        validCin = true; 
-    }
-    else if (sortItBy == "numberOfSteps") {
-        sortItBy = "numSteps";
-        validCin = true;
-    }
-    else if (sortItBy == "timeItTakes") {
-        sortItBy = "mins";
-        validCin = true;
+    if (typeSort == "quick" || typeSort  == "heap") {
+        if (sortItBy == "numberOfIngredients") {
+            sortItBy = "numIngred";
+            validCin = true;
+        }
+        else if (sortItBy == "numberOfSteps") {
+            sortItBy = "numSteps";
+            validCin = true;
+        }
+        else if (sortItBy == "timeItTakes") {
+            sortItBy = "mins";
+            validCin = true;
+        }
+        else {
+            cout << "invalid command, try again" << endl;
+        }
     }
     else {
-        cout << "invalid command, try again" << endl;
+        cout << "invalid sort type, try again" << endl; 
     }
+
 
     if (validCin) {
-        searchData(recipes, keyword, sortItBy);
+        searchData(recipes, keyword, sortItBy, typeSort);
     }
      
-    // Record the time it takes to run the program
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start); 
-    cout << "Time taken by function: " << duration.count() << " microseconds" << endl; 
-
     return 0;
 };
 // ----------------------------------------------------------------
@@ -242,8 +245,8 @@ void printSelected(vector<Recipe*> recipes, string type, int size) {
 }
 
     // search 
-void searchData(vector<Recipe*> recipes, string keyword, string sortBy) {
-    
+void searchData(vector<Recipe*> recipes, string keyword, string sortBy, string sort) {
+
     vector<Recipe*> result; 
 
     for (int i = 0; i < recipes.size(); i++) {
@@ -251,7 +254,24 @@ void searchData(vector<Recipe*> recipes, string keyword, string sortBy) {
             result.push_back(recipes[i]);
         }
     }
+    
+    auto start = high_resolution_clock::now();
 
-    heapSort(result, result.size(), sortBy);
+    if (sort == "quick") {
+        quickSort(result, 0, result.size() - 1, sortBy);
+    }
+    else if (sort == "heap") {
+        heapSort(result, result.size(), sortBy);
+    }
+
+    // Record the time it takes to run the program
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    // print all the result in sorted fashion
     printSelected(result, "all", result.size());
+    cout << endl; 
+
+    cout << "Time taken by function: " << duration.count() << " microseconds" << endl;
+
 }
