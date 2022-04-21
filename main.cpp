@@ -96,7 +96,7 @@ vector<Recipe*> dataParsing(vector<Recipe*> recipes) {
     theFile.open("Recipes.csv");
     getline(theFile, line);
 
-    //parsing data line by line until there are 100,000 data
+    //parsing data line by line
     while (getline(theFile, line) && counter < 100000) {
         
         na = line.substr(0, line.find(','));
