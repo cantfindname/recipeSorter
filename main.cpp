@@ -1,76 +1,86 @@
 
-/*
-
-Things to do:
-
-quick sort implementation for all int - done
-heap sort implementation for all int
-search function
-print
-
-
-*/
-
-/*
-things finished
-
-parsing
-working quick sort for get min
-working heap sort for get min
-quick sort working for all 
-
-*/
-
-
-
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
+#include <chrono>
 #include "Recipe.h"
 
 using namespace std;
+using namespace std::chrono; 
+
+// function initialization 
+vector<Recipe*> dataParsing(vector<Recipe*> recipes);
+
+    // quick sort
+void quickSort(vector<Recipe*> recipes, int start, int end, string type);
+int quickSortHelper(vector<Recipe*> recipes, int start, int end, string type);
+
+    // heap sort
+void heapSort(vector<Recipe*> recipes, int size, string type);
+void heapify(vector<Recipe*> recipes, int size, int index, string type);
+
+    // print the recipe and related data
+void printSelected(vector<Recipe*> recipes, string type, int size);
+    
+    // search for recipe according to user input
+void searchData(vector<Recipe*> recipes, string keyword, string sortBy);
 
 
-void dataParsing(Recipe r[]);
-void testZone(Recipe r);
-
-void quickSort(Recipe recipes[], int start, int end, string type);
-int quickSortHelper(Recipe recipes[], int start, int end, string type);
-
-void heapSort(Recipe recipes[], int size, string type);
-void heapify(Recipe recipes[], int size, int index, string type);
-
-void printMins(Recipe recipes[], int size);
-void printSelected(Recipe recipes[], string type, int size);
-
-
-
+// ----------- getting user input and calling functions -----------
 int main() {
-    int size; 
+    auto start = high_resolution_clock::now(); 
 
-    Recipe temp[100000];
+    string keyword;
+    string sortItBy;
+    bool validCin = false; 
 
+    // user interface and input
+    cout << "=======================================" << endl; 
+    cout << "what type of food are you looking for?" << endl; 
+    cout << "please enter one keyword, such as coffee, salad, cake" << endl; 
+    cin >> keyword; 
+    cout << "how would you like to sort it by? Enter either numberOfIngredients, numberOfSteps, or timeItTakes" << endl;
+    cin >> sortItBy; 
 
-    dataParsing(temp);
+    // initialize the recipes vector and add Recipe object into the vector 
+    vector<Recipe*> recipes; 
+    recipes = dataParsing(recipes);
 
-    //size = sizeof(temp) / sizeof(temp[0]);
+    // check for valid user input
+    if (sortItBy == "numberOfIngredients") {
+        sortItBy = "numIngred";
+        validCin = true; 
+    }
+    else if (sortItBy == "numberOfSteps") {
+        sortItBy = "numSteps";
+        validCin = true;
+    }
+    else if (sortItBy == "timeItTakes") {
+        sortItBy = "mins";
+        validCin = true;
+    }
+    else {
+        cout << "invalid command, try again" << endl;
+    }
 
-    //quickSort(temp, 0, 9, "mins");
-   //heapSort(temp, size, "numSteps");
-
-    //printSelected(temp, "numSteps", size);
-
+    if (validCin) {
+        searchData(recipes, keyword, sortItBy);
+    }
      
-    //cout << size << endl; 
+    // Record the time it takes to run the program
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start); 
+    cout << "Time taken by function: " << duration.count() << " microseconds" << endl; 
 
     return 0;
 };
+// ----------------------------------------------------------------
 
-void dataParsing(Recipe r[]) {
+// function delcaration 
+vector<Recipe*> dataParsing(vector<Recipe*> recipes) {
 
     int counter = 0;
-
-    int tempSize = 1; 
 
     string na;
     int id;
@@ -86,8 +96,9 @@ void dataParsing(Recipe r[]) {
     theFile.open("Recipes.csv");
     getline(theFile, line);
 
+    //parsing data line by line until there are 100,000 data
     while (getline(theFile, line) && counter < 100000) {
-
+        
         na = line.substr(0, line.find(','));
         line = line.substr(line.find(',') + 1);
 
@@ -102,8 +113,8 @@ void dataParsing(Recipe r[]) {
 
         numSt = stoi(line.substr(0, line.find(',')));
         line = line.substr(line.find(',') + 1);
-
-        ste = line.substr(2, (line.find("]\",")-2));
+        
+        ste = line.substr(2, (line.find("]\",") - 2));
         line = line.substr(line.find("]\",") + 3);
 
         ing = line.substr(2, (line.find("]\",")-2));
@@ -111,135 +122,136 @@ void dataParsing(Recipe r[]) {
 
         numIn = stoi(line);
 
-        r[counter] = Recipe(na, id, mi, nutrit, numSt, numIn, ing, ste);
-
-        //testZone(r[counter]);
+        // construct a new object and add to the vector
+        recipes.push_back(new Recipe(na, id, mi, nutrit, numSt, numIn, ing, ste));
         counter++;
-        tempSize++;
-
     }
-
-
+    return recipes; 
 }
 
-
-
-void quickSort(Recipe recipes[], int start, int end, string type) {
-
+    //quick Sort
+void quickSort(vector<Recipe*> recipes, int start, int end, string type) {
     int position; 
 
     if (start < end) {
         position = quickSortHelper(recipes, start, end, type);
 
+        //sort the left portion of the vector
         quickSort(recipes, start, position - 1, type);
 
+        //sort the right portion of the vector
         quickSort(recipes, position + 1, end, type);
     }
 }
 
-int quickSortHelper(Recipe recipes[], int start, int end, string type) {
+int quickSortHelper(vector<Recipe*> recipes, int start, int end, string type) {
     
-    int pivot = recipes[start].valueGetter(type);
+    int pivot = recipes[start]->valueGetter(type);
     int count = 0; 
 
     for (int i = start + 1; i <= end; i++) {
-        if (recipes[i].valueGetter(type) <= pivot) {
+        if (recipes[i]->valueGetter(type) <= pivot) {
             count++;
         }
     }
 
     int pivotIndex = start + count; 
 
-    recipes[pivotIndex].swapRecipe(recipes[start]);
+    recipes[pivotIndex]->swapRecipe(*recipes[start]);
 
     int i = start;
     int j = end;
 
-
     while (i < pivotIndex && j > pivotIndex) { 
-        while (recipes[i].valueGetter(type) <= pivot) {
+        while (recipes[i]->valueGetter(type) <= pivot) {
             i++;
         }
-        while (recipes[j].valueGetter(type) > pivot) {
+        while (recipes[j]->valueGetter(type) > pivot) {
             j--;
         }
         if (i < pivotIndex && j > pivotIndex) {
-            recipes[i].swapRecipe(recipes[j]);
+            recipes[i]->swapRecipe(*recipes[j]);
             i++;
-            j++;
+            j--;
         }
     }
     return pivotIndex; 
 }
 
-
-void heapSort(Recipe recipes[], int size, string type) {
+    // heap Sort
+void heapSort(vector<Recipe*> recipes, int size, string type) {
     for (int i = size / 2 - 1; i >= 0; i--) {
         heapify(recipes, size, i, type);
     }
 
     for (int i = size - 1; i > 0; i--) {
-        recipes[0].swapRecipe(recipes[i]);
+        recipes[0]->swapRecipe(*recipes[i]);
 
         heapify(recipes, i, 0, type);
     }
 }
 
-void heapify(Recipe recipes[], int size, int index, string type) {
+void heapify(vector<Recipe*> recipes, int size, int index, string type) {
     int largest = index;
     int leftChild = 2 * index + 1;
     int rightChild = 2 * index + 2;
 
-    if (leftChild < size && recipes[leftChild].valueGetter(type) > recipes[largest].valueGetter(type)) {
+    if (leftChild < size && recipes[leftChild]->valueGetter(type) > recipes[largest]->valueGetter(type)) {
         largest = leftChild;
     }
-    if (rightChild < size && recipes[rightChild].valueGetter(type) > recipes[largest].valueGetter(type)) {
+    if (rightChild < size && recipes[rightChild]->valueGetter(type) > recipes[largest]->valueGetter(type)) {
         largest = rightChild;
     }
-
     if (largest != index) {
-        recipes[largest].swapRecipe(recipes[index]);
+        recipes[largest]->swapRecipe(*recipes[index]);
         heapify(recipes, size, largest, type);
     }
-
 }
 
-void testZone(Recipe r) {
-    cout << "name: " << r.getName() << endl;
-    cout << "ID: " << r.getUniqueID() << endl;
-    cout << "Minutes: " << r.getMins() << endl;
-    cout << "Nutrition: " << r.getNutrition() << endl;
-    cout << "Number of Steps: " << r.getNumSteps() << endl;
-    cout << "Number of Ingredients: " << r.getNumIngred() << endl;
-    cout << "ingredients: " << r.getIngredients() << endl;
-    cout << "Steps: " << r.getSteps() << endl;
-}
-
-void printMins(Recipe recipes[], int size) {
-    for (int i = 0; i < size; i++) {
-        cout << recipes[i].getName() << ": " << recipes[i].getNumSteps() << endl;
-    }
-}
-
-void printSelected(Recipe recipes[], string type, int size) {
-    cout << "size: " << size << endl;
-
+    // print
+void printSelected(vector<Recipe*> recipes, string type, int size) {
+    // print all information of each recipe
     if (type == "all") {
         for (int i = 0; i < size; i++) {
-            cout << "name: " << recipes[i].getName() << endl;
-            cout << "ID: " << recipes[i].getUniqueID() << endl;
-            cout << "Minutes: " << recipes[i].getMins() << endl;
-            cout << "Nutrition: " << recipes[i].getNutrition() << endl;
-            cout << "Number of Steps: " << recipes[i].getNumSteps() << endl;
-            cout << "Number of Ingredients: " << recipes[i].getNumIngred() << endl;
-            cout << "ingredients: " << recipes[i].getIngredients() << endl;
-            cout << "Steps: " << recipes[i].getSteps() << endl;
+            cout << "name: " << recipes[i]->getName() << endl;
+            cout << "Time it takes to prepare: " << recipes[i]->getMins() << " minutes" << endl;
+            cout << "Number of Steps in recipe: " << recipes[i]->getNumSteps() << endl;
+            cout << "Number of Ingredients needed: " << recipes[i]->getNumIngred() << endl;
+            cout << "ingredients: " << recipes[i]->getIngredients() << endl;
+            cout << "Steps: " << recipes[i]->getSteps() << endl;
+            cout << endl; 
         }
     }
+
+    // print the name of each recipe 
+    else if (type == "name") {
+        for (int i = 0; i < size; i++) {
+            cout << recipes[i]->getName() << endl;
+        }
+    }
+
+    // print the name and the value that it's sorted by
     else {
         for (int i = 0; i < size; i++) {
-            cout << recipes[i].getName() << ": " << recipes[i].valueGetter(type) << endl;
+            cout << recipes[i]->getName() << ": " << recipes[i]->valueGetter(type) << endl;
         }
-
     }
+
+    cout << "There are in total " << size << " entries" << endl;
+
+}
+
+    // search 
+void searchData(vector<Recipe*> recipes, string keyword, string sortBy) {
+    
+    vector<Recipe*> result; 
+
+    for (int i = 0; i < recipes.size(); i++) {
+        if (recipes[i]->getName().find(keyword) != -1) {
+            result.push_back(recipes[i]);
+        }
+    }
+
+    heapSort(result, result.size(), sortBy);
+    printSelected(result, "all", result.size());
 }
