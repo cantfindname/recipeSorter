@@ -7,7 +7,7 @@ using namespace std;
 
 
 class Recipe {
-
+	// private variables
 	string name;
 	int uniqueID;
 	int mins;
@@ -19,8 +19,11 @@ class Recipe {
 
 
 public:
+	// constructors 
 	Recipe();
 	Recipe(string n, int id, int min, string nut, int numS, int numI, string ingred, string s);
+
+	// getters
 	string getName();
 	int getUniqueID();
 	int getMins();
@@ -30,7 +33,10 @@ public:
 	string getIngredients();
 	string getNutrition();
 
-
+	// helpers
 	void swapRecipe(Recipe& other);
-	int valueGetter( string var);
+	int valueGetter(string var);
+
+	// destructor
+	~Recipe();
 };
